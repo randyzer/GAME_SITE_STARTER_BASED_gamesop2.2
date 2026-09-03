@@ -12,6 +12,14 @@
   --color-primary: #1f4a3b;
   --color-accent: #ee4b20;
   --color-accent-strong: #a92709;
+  --color-guides: var(--color-accent);
+  --color-heroes: var(--color-accent);
+  --color-weapons: var(--color-accent);
+  --color-items: var(--color-accent);
+  --color-maps: var(--color-accent);
+  --color-updates: var(--color-accent);
+  --color-meta: var(--color-accent);
+  --color-tools: var(--color-accent);
   --color-border: color-mix(in srgb, var(--color-text) 24%, transparent);
   --color-border-strong: color-mix(in srgb, var(--color-text) 72%, transparent);
   --color-on-primary: #e5eadf;

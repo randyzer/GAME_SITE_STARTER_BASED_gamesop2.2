@@ -2,20 +2,65 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
+import {
+  pageModuleSchema,
+  type PageModule,
+} from "../src/data/schemas/page-inventory";
+
 const themeUrl = new URL("../src/styles/theme.css", import.meta.url);
+const pageFamiliesUrl = new URL(
+  "../src/styles/page-families.css",
+  import.meta.url,
+);
 const globalStylesUrl = new URL(
   "../src/styles/global.css",
   import.meta.url,
 );
+const baseLayoutUrl = new URL(
+  "../src/layouts/BaseLayout.astro",
+  import.meta.url,
+);
+
+const familyTokenDecisions = {
+  core: "--color-accent",
+  guides: "--color-guides",
+  heroes: "--color-heroes",
+  weapons: "--color-weapons",
+  items: "--color-items",
+  maps: "--color-maps",
+  tierLists: "--color-meta",
+  news: "--color-updates",
+  search: "--color-accent",
+  tools: "--color-tools",
+} satisfies Record<PageModule, string>;
+
+const familyTokens = [
+  ...new Set(Object.values(familyTokenDecisions)),
+].filter((token) => token !== "--color-accent");
+
+function read(url: URL): string {
+  expect(existsSync(url), `${url.pathname} exists`).toBe(true);
+  return existsSync(url) ? readFileSync(url, "utf8") : "";
+}
+
+function familyAccentValue(module: PageModule): string {
+  const token = familyTokenDecisions[module];
+  return token === "--color-accent"
+    ? "var(--color-accent)"
+    : `var(${token}, var(--color-accent))`;
+}
+
+function normalizePureMappingCss(styles: string): string {
+  return styles
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\s*([{}:;,=\[\]])\s*/g, "$1");
+}
 
 describe("theme tokens", () => {
-  it("defines the reusable semantic color contract", () => {
-    expect(existsSync(themeUrl)).toBe(true);
-    if (!existsSync(themeUrl)) {
-      return;
-    }
-
-    const theme = readFileSync(themeUrl, "utf8");
+  it("preserves the existing semantic color contract", () => {
+    const theme = read(themeUrl);
     for (const token of [
       "--color-background",
       "--color-surface",
@@ -31,9 +76,147 @@ describe("theme tokens", () => {
     }
   });
 
-  it("loads the theme contract from the global stylesheet", () => {
-    const globalStyles = readFileSync(globalStylesUrl, "utf8");
+  it("defines every approved family token as a default base-accent fallback", () => {
+    const theme = read(themeUrl);
+
+    for (const token of familyTokens) {
+      expect(theme).toMatch(
+        new RegExp(`${token}:\\s*var\\(--color-accent\\);`),
+      );
+    }
+  });
+
+  it("loads theme and family contracts from the global stylesheet", () => {
+    const globalStyles = read(globalStylesUrl);
 
     expect(globalStyles).toMatch(/@import\s+["']\.\/theme\.css["'];/);
+    expect(globalStyles).toMatch(
+      /@import\s+["']\.\/page-families\.css["'];/,
+    );
+  });
+});
+
+describe("controlled page-family mapping", () => {
+  it("makes the explicit decision table exhaustive for the live module schema", () => {
+    expect(Object.keys(familyTokenDecisions).sort()).toEqual(
+      [...pageModuleSchema.options].sort(),
+    );
+  });
+
+  it("is exactly the generated pure mapping for every live module", () => {
+    const familyStyles = read(pageFamiliesUrl);
+    const expectedFamilyStyles = pageModuleSchema.options
+      .map(
+        (module) =>
+          `[data-page-family="${module}"] {\n  --page-accent: ${familyAccentValue(module)};\n}`,
+      )
+      .join("\n\n");
+
+    expect(normalizePureMappingCss(familyStyles)).toBe(
+      normalizePureMappingCss(expectedFamilyStyles),
+    );
+  });
+
+  it("maps core and search directly to the base accent", () => {
+    const familyStyles = normalizePureMappingCss(read(pageFamiliesUrl));
+
+    expect(familyStyles).toContain(
+      normalizePureMappingCss(
+        '[data-page-family="core"] { --page-accent: var(--color-accent); }',
+      ),
+    );
+    expect(familyStyles).toContain(
+      normalizePureMappingCss(
+        '[data-page-family="search"] { --page-accent: var(--color-accent); }',
+      ),
+    );
+  });
+
+  it("contains no palette values or arbitrary family keys", () => {
+    const familyStyles = read(pageFamiliesUrl);
+
+    expect(familyStyles).not.toMatch(
+      /#[0-9a-f]{3,8}\b|\b(?:rgb|hsl)a?\s*\(/i,
+    );
+    expect(familyStyles).not.toMatch(
+      /\b(?:color|lab|lch|oklab|oklch)\s*\(/i,
+    );
+    expect(familyStyles).not.toMatch(
+      /data-page-family=["'](?:beginner-guides|early-game|hero-detail)["']/,
+    );
+    for (const arbitraryKey of [
+      "beginner-guides",
+      "early-game",
+      "hero-detail",
+    ]) {
+      expect(pageModuleSchema.safeParse(arbitraryKey).success).toBe(false);
+    }
+  });
+});
+
+describe("page-family presentation boundary", () => {
+  it("binds the BaseLayout family only to the validated page module", () => {
+    const baseLayout = read(baseLayoutUrl);
+    const bindings = [
+      ...baseLayout.matchAll(/data-page-family=\{([^}]+)\}/g),
+    ].map(([, binding]) => binding.trim());
+
+    expect(bindings).toEqual(["page.module"]);
+    expect(baseLayout).toMatch(
+      /<body\s+id=["']top["']\s+data-page-family=\{page\.module\}>/,
+    );
+    expect(baseLayout).not.toMatch(/\bpageFamily\??\s*:/);
+  });
+
+  it("removes the stale hard-coded browser theme color", () => {
+    const baseLayout = read(baseLayoutUrl);
+
+    expect(baseLayout).not.toMatch(/<meta\s+name=["']theme-color["']/);
+    expect(baseLayout).not.toContain("#ee4b20");
+  });
+
+  it("uses the single page accent only for controlled non-text hooks", () => {
+    const globalStyles = read(globalStylesUrl);
+    const pageAccent = "var(--page-accent, var(--color-accent))";
+
+    for (const selector of [
+      ".desktop-nav__link::after",
+      ".article__header",
+      ".hub-page__header",
+      ".search-shell__header",
+      ".static-page__header",
+      ".entity-database__header",
+      ".entity-page__header",
+      ".tool-shell__header",
+      ".game-media img",
+    ]) {
+      const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      expect(globalStyles).toMatch(
+        new RegExp(
+          `${escapedSelector}[^}]*${pageAccent.replace(/[()]/g, "\\$&")}`,
+        ),
+      );
+    }
+
+    expect(globalStyles).not.toMatch(
+      /var\(--color-(?:guides|heroes|weapons|items|maps|updates|meta|tools)\b/,
+    );
+  });
+
+  it("preserves contrast-safe shared tokens for text accents", () => {
+    const globalStyles = read(globalStylesUrl);
+
+    expect(globalStyles).toMatch(
+      /\.mobile-nav a\[aria-current="page"\],[^}]*color:\s*var\(--color-accent-strong\);/,
+    );
+    expect(globalStyles).toMatch(
+      /\.article__classification \.eyebrow\s*\{[^}]*color:\s*var\(--color-accent-strong\);/,
+    );
+    expect(globalStyles).toMatch(
+      /\.wiki-article__header > \.eyebrow\s*\{[^}]*color:\s*var\(--color-accent-strong\);/,
+    );
+    expect(globalStyles).toMatch(
+      /\.guide-index__number\s*\{[^}]*color:\s*var\(--color-accent\);/,
+    );
   });
 });

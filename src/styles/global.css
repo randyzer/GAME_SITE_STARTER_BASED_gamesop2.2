@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "./page-families.css";
 
 :root {
   --display: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
@@ -194,7 +195,7 @@ select:focus-visible {
   bottom: -9px;
   left: 0;
   height: 2px;
-  background: var(--color-accent);
+  background: var(--page-accent, var(--color-accent));
   content: "";
   transform: scaleX(0);
   transform-origin: right;
@@ -783,6 +784,7 @@ select:focus-visible {
 
 .article__header {
   padding-block: clamp(72px, 10vw, 138px) 72px;
+  border-top: 3px solid var(--page-accent, var(--color-accent));
   border-bottom: 1px solid var(--color-border-strong);
 }
 
@@ -1115,7 +1117,7 @@ select:focus-visible {
   width: 100%;
   max-width: 100%;
   height: auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--page-accent, var(--color-accent));
 }
 
 .game-media figcaption {
@@ -1224,6 +1226,15 @@ select:focus-visible {
   grid-template-columns: 1.35fr 0.65fr;
   gap: clamp(40px, 8vw, 110px);
   align-items: end;
+}
+
+.hub-page__header,
+.search-shell__header,
+.static-page__header,
+.entity-database__header,
+.entity-page__header,
+.tool-shell__header {
+  border-top: 3px solid var(--page-accent, var(--color-accent));
 }
 
 .hub-page__header h1,

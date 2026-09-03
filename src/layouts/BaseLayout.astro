@@ -40,7 +40,6 @@ const graph = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="theme-color" content="#ee4b20" />
     <meta name="robots" content={robots} />
     <title>{page.title}</title>
     <meta name="description" content={page.description} />
@@ -69,7 +68,7 @@ const graph = [
       })}
     />
   </head>
-  <body id="top">
+  <body id="top" data-page-family={page.module}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="coordinate" aria-hidden="true">
       <span>00.00</span>
