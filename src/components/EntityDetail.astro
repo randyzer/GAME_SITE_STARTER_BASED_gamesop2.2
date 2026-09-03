@@ -2,6 +2,10 @@
 import QuickFacts from "./wiki/QuickFacts.astro";
 import RelatedPages from "./wiki/RelatedPages.astro";
 import Sources from "./wiki/Sources.astro";
+import GameMedia from "./media/GameMedia.astro";
+import ScreenshotGallery from "./media/ScreenshotGallery.astro";
+import { mediaCatalog } from "../data/media/catalog";
+import type { ImageAsset, VideoAsset } from "../data/schemas/media";
 import { enabledPageCatalog, getRelatedPages, siteConfig } from "../core/site-data";
 import {
   buildBreadcrumbSchema,
@@ -25,9 +29,18 @@ interface Props {
   };
   fields: Array<{ label: string; value: string }>;
   entityLabel: string;
+  heroMedia?: ImageAsset;
+  galleryMedia?: ImageAsset[];
+  trailerMedia?: VideoAsset;
 }
 
 const { page, fact, fields, entityLabel } = Astro.props;
+const mappedMedia = mediaCatalog.getPageMedia(page.pageId);
+const {
+  heroMedia = mappedMedia.heroMedia,
+  galleryMedia = mappedMedia.galleryMedia,
+  trailerMedia = mappedMedia.trailerMedia,
+} = Astro.props;
 const relatedPages = getRelatedPages(page);
 const quickFacts = [
   { label: "Patch", value: fact.patch },
@@ -74,7 +87,22 @@ const breadcrumbTrail = buildBreadcrumbTrail(
       </div>
     </header>
 
+    {heroMedia && (
+      <div class="page-media" data-media-placement="hero">
+        <GameMedia asset={heroMedia} eager />
+      </div>
+    )}
     <QuickFacts items={quickFacts} title={`${entityLabel} facts`} />
+    {galleryMedia.length > 0 && (
+      <div class="page-media" data-media-placement="gallery">
+        <ScreenshotGallery assets={galleryMedia} />
+      </div>
+    )}
+    {trailerMedia && (
+      <div class="page-media" data-media-placement="trailer">
+        <GameMedia asset={trailerMedia} />
+      </div>
+    )}
     <RelatedPages pages={relatedPages} />
     <Sources sources={fact.sources} />
   </main>

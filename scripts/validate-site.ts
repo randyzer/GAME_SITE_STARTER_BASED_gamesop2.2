@@ -13,11 +13,24 @@ import {
 } from "../src/data/entity-modules";
 import pageInventoryData from "../src/data/page-inventory.json";
 import { parsePageInventory } from "../src/data/schemas/page-inventory";
+import { createMediaCatalog } from "../src/data/media/catalog";
+import mediaManifest from "../src/data/media/media.json";
+import { isLocalImageFile } from "./media-validation";
 
 const projectRoot = process.cwd();
 const readErrors: string[] = [];
 const inventory = parsePageInventory(pageInventoryData);
 const contentEntries: ContentEntryReference[] = [];
+
+try {
+  createMediaCatalog(
+    mediaManifest,
+    inventory.map((page) => page.pageId),
+    (src) => isLocalImageFile(src, resolve(projectRoot, "public")),
+  );
+} catch (error) {
+  readErrors.push(`Media validation failed: ${error instanceof Error ? error.message : String(error)}`);
+}
 
 const contentCollections = [
   {

@@ -9,7 +9,11 @@ import {
   buildCanonicalUrl,
 } from "../../core/seo";
 import type { PageInventoryEntry } from "../../data/schemas/page-inventory";
+import { mediaCatalog } from "../../data/media/catalog";
+import type { ImageAsset, VideoAsset } from "../../data/schemas/media";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import GameMedia from "../media/GameMedia.astro";
+import ScreenshotGallery from "../media/ScreenshotGallery.astro";
 import QuickFacts from "./QuickFacts.astro";
 import RelatedPages from "./RelatedPages.astro";
 import Sources from "./Sources.astro";
@@ -20,6 +24,9 @@ interface Props {
   headings?: MarkdownHeading[];
   quickFacts?: Array<{ label: string; value: string }>;
   sectionLabel?: string;
+  heroMedia?: ImageAsset;
+  galleryMedia?: ImageAsset[];
+  trailerMedia?: VideoAsset;
 }
 
 const {
@@ -27,6 +34,12 @@ const {
   headings = [],
   quickFacts = [],
   sectionLabel = "Player guide",
+} = Astro.props;
+const mappedMedia = mediaCatalog.getPageMedia(page.pageId);
+const {
+  heroMedia = mappedMedia.heroMedia,
+  galleryMedia = mappedMedia.galleryMedia,
+  trailerMedia = mappedMedia.trailerMedia,
 } = Astro.props;
 const tocHeadings = selectWikiArticleHeadings(headings);
 const showToc = tocHeadings.length >= 2;
@@ -80,6 +93,11 @@ const structuredData = [
         </dl>
       </header>
 
+      {heroMedia && (
+        <div class="page-media" data-media-placement="hero">
+          <GameMedia asset={heroMedia} eager />
+        </div>
+      )}
       <QuickFacts items={quickFacts} />
 
       <div class:list={["article__layout", "wiki-article__layout", !showToc && "wiki-article__layout--single"]}>
@@ -101,6 +119,16 @@ const structuredData = [
         <div class="prose"><slot /></div>
       </div>
 
+      {galleryMedia.length > 0 && (
+        <div class="page-media" data-media-placement="gallery">
+          <ScreenshotGallery assets={galleryMedia} />
+        </div>
+      )}
+      {trailerMedia && (
+        <div class="page-media" data-media-placement="trailer">
+          <GameMedia asset={trailerMedia} />
+        </div>
+      )}
       <RelatedPages pages={relatedPages} />
       <Sources sources={page.sources} />
     </article>
