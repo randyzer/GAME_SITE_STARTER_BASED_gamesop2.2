@@ -22,7 +22,15 @@ export default defineGameConfig({
     xHandle: "@gameatlas",
   },
   navigation: {
-    primaryPageIds: ["home", "hub.guides", "search"],
+    groups: [
+      { label: "Home", pageId: "home" },
+      {
+        label: "Guides",
+        pageId: "hub.guides",
+        children: ["guide.getting-started"],
+      },
+      { label: "Search", pageId: "search" },
+    ],
   },
   homepage: {
     featuredPageIds: ["guide.getting-started"],

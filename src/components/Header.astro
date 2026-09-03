@@ -1,5 +1,7 @@
 ---
-import { primaryNavigationPages, siteConfig } from "../core/site-data";
+import DesktopNav from "./navigation/DesktopNav.astro";
+import MobileNav from "./navigation/MobileNav.astro";
+import { resolvedNavigationGroups, siteConfig } from "../core/site-data";
 import { buildBrandPresentation } from "../core/brand";
 
 interface Props {
@@ -8,16 +10,6 @@ interface Props {
 
 const { currentRoute } = Astro.props;
 const brandPresentation = buildBrandPresentation(siteConfig);
-
-function navigationLabel(pageId: string) {
-  const labels: Record<string, string> = {
-    home: "Dispatch",
-    "hub.guides": "Guides",
-    search: "Search",
-  };
-
-  return labels[pageId] ?? pageId.replaceAll(/[.-]/g, " ");
-}
 ---
 
 <header class="site-header">
@@ -30,18 +22,7 @@ function navigationLabel(pageId: string) {
       </span>
     </a>
 
-    <nav class="site-nav" aria-label="Primary navigation">
-      {primaryNavigationPages.map((page) => (
-        <a
-          href={page.route}
-          aria-current={currentRoute === page.route ? "page" : undefined}
-        >
-          {navigationLabel(page.pageId)}
-        </a>
-      ))}
-      <a class="site-nav__signal" href="/#browse">
-        Browse <span aria-hidden="true">↘</span>
-      </a>
-    </nav>
+    <DesktopNav groups={resolvedNavigationGroups} currentRoute={currentRoute} />
+    <MobileNav groups={resolvedNavigationGroups} currentRoute={currentRoute} />
   </div>
 </header>

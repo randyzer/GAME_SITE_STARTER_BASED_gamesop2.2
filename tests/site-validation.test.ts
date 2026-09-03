@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { defineGameConfig } from "../src/config/schema";
@@ -14,6 +16,18 @@ const guideContent = {
 };
 
 describe("collectSiteValidationErrors", () => {
+  it("delegates navigation resolution to the site-data resolver", () => {
+    const source = readFileSync(
+      new URL("../src/core/site-validation.ts", import.meta.url),
+      "utf8",
+    );
+
+    expect(source).toMatch(/import\s*\{[^}]*resolveNavigationGroups[^}]*\}\s*from\s*["']\.\/site-data["']/s);
+    expect(source).not.toMatch(
+      /for\s*\([^)]*of\s+input\.config\.navigation\.groups/,
+    );
+  });
+
   it("aggregates independent route, content, implementation, and fact errors", () => {
     const configWithHeroes = defineGameConfig({
       ...siteConfig,
@@ -75,7 +89,10 @@ describe("collectSiteValidationErrors", () => {
     const brokenConfig = defineGameConfig({
       ...siteConfig,
       navigation: {
-        primaryPageIds: ["home", "hero.demo-sentinel"],
+        groups: [
+          { pageId: "home" },
+          { pageId: "hero.demo-sentinel" },
+        ],
       },
       homepage: {
         featuredPageIds: ["guide.missing"],
@@ -113,6 +130,71 @@ describe("collectSiteValidationErrors", () => {
     expect(errors).toMatch(/homepage.*guide\.missing/i);
     expect(errors).toMatch(/related page.*guide\.missing/i);
     expect(errors).toMatch(/indexable.*about/i);
+  });
+
+  it.each([
+    ["draft", { publicationStatus: "draft" as const }],
+    ["scheduled", { publicationStatus: "scheduled" as const }],
+    ["archived", { publicationStatus: "archived" as const }],
+    ["private", { visibility: "private" as const }],
+    ["unlisted", { visibility: "unlisted" as const }],
+  ])("rejects a %s page referenced by navigation", (_label, override) => {
+    const config = defineGameConfig({
+      ...siteConfig,
+      navigation: { groups: [{ pageId: "about" }] },
+    });
+    const inventory = pageInventory.map((page) =>
+      page.pageId === "about"
+        ? { ...page, ...override, indexability: "noindex" as const }
+        : page,
+    );
+
+    const errors = collectSiteValidationErrors({
+      config,
+      inventory,
+      contentEntries: [guideContent],
+      factModules: {},
+      fixedRoutes: ["/"],
+      implementedPageTypes: [
+        "home",
+        "guide",
+        "hub",
+        "search",
+        "about",
+        "privacy",
+        "terms",
+        "not-found",
+      ],
+    }).join("\n");
+
+    expect(errors).toMatch(/navigation.*about.*enabled catalog/i);
+  });
+
+  it("rejects a feature-disabled page referenced by navigation", () => {
+    const config = defineGameConfig({
+      ...siteConfig,
+      navigation: { groups: [{ pageId: "hero.demo-sentinel" }] },
+    });
+
+    const errors = collectSiteValidationErrors({
+      config,
+      inventory: pageInventory,
+      contentEntries: [guideContent],
+      factModules: {},
+      fixedRoutes: ["/"],
+      implementedPageTypes: [
+        "home",
+        "guide",
+        "hub",
+        "search",
+        "about",
+        "privacy",
+        "terms",
+        "not-found",
+      ],
+    }).join("\n");
+
+    expect(errors).toMatch(/navigation.*hero\.demo-sentinel.*enabled catalog/i);
   });
 
   it("rejects an entity page gated by another module's feature", () => {

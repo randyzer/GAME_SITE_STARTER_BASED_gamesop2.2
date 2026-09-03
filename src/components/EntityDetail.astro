@@ -1,4 +1,7 @@
 ---
+import QuickFacts from "./wiki/QuickFacts.astro";
+import RelatedPages from "./wiki/RelatedPages.astro";
+import Sources from "./wiki/Sources.astro";
 import { enabledPageCatalog, getRelatedPages, siteConfig } from "../core/site-data";
 import {
   buildBreadcrumbSchema,
@@ -26,6 +29,11 @@ interface Props {
 
 const { page, fact, fields, entityLabel } = Astro.props;
 const relatedPages = getRelatedPages(page);
+const quickFacts = [
+  { label: "Patch", value: fact.patch },
+  { label: "Last updated", value: fact.updatedAt },
+  ...fields.filter((field) => field.label.toLocaleLowerCase("en") !== "patch"),
+];
 const canonical = buildCanonicalUrl(siteConfig, page.route);
 const breadcrumbTrail = buildBreadcrumbTrail(
   siteConfig,
@@ -55,62 +63,19 @@ const breadcrumbTrail = buildBreadcrumbTrail(
 
     <header class="entity-page__header reveal reveal--1">
       <div>
-        <p class="eyebrow">{entityLabel} record / patch {fact.patch}</p>
+        <p class="eyebrow">{entityLabel} guide</p>
         <h1 data-pagefind-meta="title">{fact.name}</h1>
         <p data-pagefind-meta="description">{fact.summary}</p>
       </div>
-      <div class="entity-page__seal" aria-label={`Confidence ${fact.confidence}`}>
-        <span>Confidence</span>
-        <strong>{fact.confidence}</strong>
-        <small>Verified {fact.updatedAt}</small>
+      <div class="entity-page__status" aria-label={`Current patch ${fact.patch}`}>
+        <span>Current version</span>
+        <strong>Patch {fact.patch}</strong>
+        <small>Updated {fact.updatedAt}</small>
       </div>
     </header>
 
-    <section class="entity-facts" aria-labelledby="entity-facts-title">
-      <div>
-        <p class="eyebrow">Current fact set</p>
-        <h2 id="entity-facts-title">At a glance</h2>
-      </div>
-      <dl>
-        {fields.map((field, index) => (
-          <div>
-            <dt><span>{(index + 1).toString().padStart(2, "0")}</span>{field.label}</dt>
-            <dd>{field.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-
-    <section class="entity-sources section-rule" aria-labelledby="entity-sources-title">
-      <div>
-        <p class="eyebrow">Provenance ledger</p>
-        <h2 id="entity-sources-title">Evidence attached</h2>
-      </div>
-      <ol>
-        {fact.sources.map((source, index) => (
-          <li>
-            <span>{(index + 1).toString().padStart(2, "0")}</span>
-            <div>
-              <strong>{source.sourceType.replaceAll("-", " ")}</strong>
-              <p>{source.evidenceNote}</p>
-              <a href={source.sourceUrl} rel="noreferrer">Inspect source ↗</a>
-            </div>
-            <time datetime={source.accessedAt}>Accessed {source.accessedAt}</time>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    {relatedPages.length > 0 && (
-      <nav class="next-dispatch" aria-label="Related pages">
-        <span class="eyebrow">Related dispatches</span>
-        {relatedPages.map((relatedPage) => (
-          <a href={relatedPage.route}>
-            <strong>{relatedPage.title}</strong>
-            <span aria-hidden="true">→</span>
-          </a>
-        ))}
-      </nav>
-    )}
+    <QuickFacts items={quickFacts} title={`${entityLabel} facts`} />
+    <RelatedPages pages={relatedPages} />
+    <Sources sources={fact.sources} />
   </main>
 </BaseLayout>

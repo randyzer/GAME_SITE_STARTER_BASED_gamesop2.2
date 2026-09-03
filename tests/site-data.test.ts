@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
+import { defineGameConfig } from "../src/config/schema";
 import {
   enabledPageCatalog,
   featuredHomepagePages,
   getPageByRoute,
   getRelatedPages,
   homepageBrowsePages,
-  primaryNavigationPages,
+  resolveNavigationGroups,
+  resolvedNavigationGroups,
+  siteConfig,
 } from "../src/core/site-data";
 
 describe("site data", () => {
@@ -38,15 +41,39 @@ describe("site data", () => {
     ]);
   });
 
-  it("resolves configured navigation and homepage references in order", () => {
-    expect(primaryNavigationPages.map((page) => page.pageId)).toEqual([
-      "home",
-      "hub.guides",
-      "search",
+  it("resolves configured navigation groups and homepage references in order", () => {
+    expect(
+      resolvedNavigationGroups.map(({ label, page, children }) => ({
+        label,
+        pageId: page.pageId,
+        childPageIds: children.map((child) => child.pageId),
+      })),
+    ).toEqual([
+      { label: "Home", pageId: "home", childPageIds: [] },
+      {
+        label: "Guides",
+        pageId: "hub.guides",
+        childPageIds: ["guide.getting-started"],
+      },
+      { label: "Search", pageId: "search", childPageIds: [] },
     ]);
     expect(featuredHomepagePages.map((page) => page.pageId)).toEqual([
       "guide.getting-started",
     ]);
+  });
+
+  it("fails navigation resolution instead of filtering a disabled page", () => {
+    const config = defineGameConfig({
+      ...siteConfig,
+      navigation: { groups: [{ pageId: "hero.demo-sentinel" }] },
+    });
+
+    expect(() =>
+      resolveNavigationGroups(
+        config.navigation.groups,
+        enabledPageCatalog,
+      ),
+    ).toThrow(/hero\.demo-sentinel.*enabled catalog/i);
   });
 
   it("keeps legal and error routes out of the homepage content directory", () => {

@@ -1,4 +1,5 @@
 import pageInventoryData from "../data/page-inventory.json";
+import type { GameConfig } from "../config/schema";
 import {
   parsePageInventory,
   type PageInventoryEntry,
@@ -20,6 +21,38 @@ const enabledPageById = new Map(
   enabledPageCatalog.map((page) => [page.pageId, page]),
 );
 
+export interface ResolvedNavigationGroup {
+  label?: string;
+  page: PageInventoryEntry;
+  children: PageInventoryEntry[];
+}
+
+export function resolveNavigationGroups(
+  groups: GameConfig["navigation"]["groups"],
+  enabledPages: PageInventoryEntry[],
+): ResolvedNavigationGroup[] {
+  const pageById = new Map(enabledPages.map((page) => [page.pageId, page]));
+  const referencedPageIds = groups.flatMap((group) => [
+    group.pageId,
+    ...group.children,
+  ]);
+  const missingPageIds = referencedPageIds.filter(
+    (pageId) => !pageById.has(pageId),
+  );
+
+  if (missingPageIds.length > 0) {
+    throw new Error(
+      `Navigation references page ${missingPageIds.map((pageId) => `"${pageId}"`).join(", ")}, but it is not in the enabled catalog.`,
+    );
+  }
+
+  return groups.map((group) => ({
+    label: "label" in group ? group.label : undefined,
+    page: pageById.get(group.pageId)!,
+    children: group.children.map((pageId) => pageById.get(pageId)!),
+  }));
+}
+
 function resolveEnabledPageIds(pageIds: string[]) {
   return pageIds.flatMap((pageId) => {
     const page = enabledPageById.get(pageId);
@@ -27,8 +60,12 @@ function resolveEnabledPageIds(pageIds: string[]) {
   });
 }
 
-export const primaryNavigationPages = resolveEnabledPageIds(
-  siteConfig.navigation.primaryPageIds,
+export const resolvedNavigationGroups = resolveNavigationGroups(
+  siteConfig.navigation.groups,
+  enabledPageCatalog,
+);
+export const primaryNavigationPages = resolvedNavigationGroups.map(
+  ({ page }) => page,
 );
 export const featuredHomepagePages = resolveEnabledPageIds(
   siteConfig.homepage.featuredPageIds,

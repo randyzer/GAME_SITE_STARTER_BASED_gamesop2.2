@@ -70,15 +70,82 @@ describe("defineGameConfig", () => {
     expect(Object.keys(config.features).sort()).toEqual(
       [...featureFlagKeys].sort(),
     );
-    expect(config.navigation.primaryPageIds).toEqual([
-      "home",
-      "hub.guides",
-      "search",
+    expect(config.navigation.groups).toEqual([
+      { pageId: "home", children: [] },
+      { pageId: "hub.guides", children: [] },
+      { pageId: "search", children: [] },
     ]);
     expect(config.homepage.featuredPageIds).toEqual([
       "guide.getting-started",
     ]);
     expect(Object.isFrozen(config)).toBe(true);
+  });
+
+  it("accepts grouped navigation and normalizes empty children", () => {
+    const config = defineGameConfig({
+      ...validConfig,
+      navigation: {
+        groups: [
+          { pageId: "home" },
+          {
+            label: "Guides",
+            pageId: "hub.guides",
+            children: ["guide.getting-started"],
+          },
+          { pageId: "search", children: [] },
+        ],
+      },
+    });
+
+    expect(config.navigation.groups).toEqual([
+      { pageId: "home", children: [] },
+      {
+        label: "Guides",
+        pageId: "hub.guides",
+        children: ["guide.getting-started"],
+      },
+      { pageId: "search", children: [] },
+    ]);
+  });
+
+  it("rejects duplicate Page IDs within the navigation tree", () => {
+    expect(() =>
+      defineGameConfig({
+        ...validConfig,
+        navigation: {
+          groups: [
+            {
+              pageId: "hub.guides",
+              children: ["guide.getting-started"],
+            },
+            { pageId: "guide.getting-started" },
+          ],
+        },
+      }),
+    ).toThrow(/navigation.*unique/i);
+  });
+
+  it("rejects navigation that authors grouped and legacy forms together", () => {
+    expect(() =>
+      defineGameConfig({
+        ...validConfig,
+        navigation: {
+          primaryPageIds: ["home"],
+          groups: [{ pageId: "home" }],
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("does not apply navigation-tree uniqueness outside navigation", () => {
+    const config = defineGameConfig({
+      ...validConfig,
+      navigation: { groups: [{ pageId: "home" }] },
+      homepage: { featuredPageIds: ["home"] },
+    });
+
+    expect(config.navigation.groups[0]?.pageId).toBe("home");
+    expect(config.homepage.featuredPageIds).toEqual(["home"]);
   });
 
   it("rejects a non-HTTPS production site URL", () => {

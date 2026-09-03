@@ -10,6 +10,7 @@ import {
 } from "../data/schemas/page-inventory";
 import type { ContentEntryReference } from "./page-resolution";
 import { buildEnabledPageCatalog } from "./catalog";
+import { resolveNavigationGroups } from "./site-data";
 
 export type { EntityFactModule } from "../data/entity-modules";
 
@@ -131,12 +132,10 @@ export function collectSiteValidationErrors(input: SiteValidationInput) {
     }
   }
 
-  for (const pageId of input.config.navigation.primaryPageIds) {
-    if (!enabledPageIds.has(pageId)) {
-      errors.push(
-        `Navigation references page "${pageId}", but it is not in the enabled catalog.`,
-      );
-    }
+  try {
+    resolveNavigationGroups(input.config.navigation.groups, enabledPages);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error));
   }
 
   for (const pageId of input.config.homepage.featuredPageIds) {

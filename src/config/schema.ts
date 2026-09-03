@@ -26,6 +26,45 @@ const uniquePageIdsSchema = z
     message: "Page ID references must be unique.",
   });
 
+const navigationGroupSchema = z
+  .object({
+    label: z.string().trim().min(1).max(40).optional(),
+    pageId: pageIdSchema,
+    children: z.array(pageIdSchema).default([]),
+  })
+  .strict();
+
+const groupedNavigationSchema = z
+  .object({
+    groups: z.array(navigationGroupSchema).min(1),
+  })
+  .strict()
+  .superRefine(({ groups }, context) => {
+    const pageIds = groups.flatMap((group) => [group.pageId, ...group.children]);
+    if (new Set(pageIds).size !== pageIds.length) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Navigation Page IDs must be unique within the primary/secondary navigation tree.",
+        path: ["groups"],
+      });
+    }
+  });
+
+const legacyNavigationSchema = z
+  .object({
+    primaryPageIds: uniquePageIdsSchema,
+  })
+  .strict()
+  .transform(({ primaryPageIds }) => ({
+    groups: primaryPageIds.map((pageId) => ({ pageId, children: [] })),
+  }));
+
+const navigationSchema = z.union([
+  groupedNavigationSchema,
+  legacyNavigationSchema,
+]);
+
 export const gameConfigSchema = z
   .object({
     brand: z
@@ -59,11 +98,7 @@ export const gameConfigSchema = z
         xHandle: z.string().regex(/^@[A-Za-z0-9_]{1,15}$/).optional(),
       })
       .strict(),
-    navigation: z
-      .object({
-        primaryPageIds: uniquePageIdsSchema,
-      })
-      .strict(),
+    navigation: navigationSchema,
     homepage: z
       .object({
         featuredPageIds: uniquePageIdsSchema,
