@@ -73,7 +73,11 @@ const Content = rendered?.Content;
     </main>
   </BaseLayout>
 ) : (
-  <WikiArticle page={page} headings={rendered?.headings}>
+  <WikiArticle
+    page={page}
+    headings={rendered?.headings}
+    faq={record.content.data.faq}
+  >
     {Content && <Content />}
   </WikiArticle>
 )}

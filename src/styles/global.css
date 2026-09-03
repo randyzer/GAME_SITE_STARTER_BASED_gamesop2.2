@@ -385,6 +385,270 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
+.wiki-portal {
+  padding-bottom: clamp(80px, 10vw, 140px);
+}
+
+.game-hero {
+  display: grid;
+  min-height: 620px;
+  padding-block: clamp(72px, 10vw, 132px);
+  border-top: 3px solid var(--page-accent, var(--color-accent));
+  border-bottom: 1px solid var(--color-border-strong);
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  gap: clamp(48px, 8vw, 112px);
+  align-items: center;
+}
+
+.game-hero__copy {
+  max-width: 760px;
+}
+
+.game-hero__copy h1 {
+  margin: 22px 0 28px;
+  font-family: var(--display);
+  font-size: clamp(4rem, 7.5vw, 7.4rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.88;
+}
+
+.game-hero__copy h1 em {
+  color: var(--color-accent-strong);
+  font-weight: 500;
+}
+
+.game-hero__lede {
+  max-width: 680px;
+  margin: 0;
+  color: color-mix(in srgb, var(--color-text) 55%, var(--color-text-muted));
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  line-height: 1.5;
+}
+
+.game-hero__tagline {
+  margin: 18px 0 0;
+  color: var(--color-text-muted);
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-hero__media {
+  min-width: 0;
+  align-self: center;
+}
+
+.portal-start {
+  display: grid;
+  padding-block: clamp(48px, 7vw, 84px);
+  border-bottom: 1px solid var(--color-border-strong);
+  grid-template-columns: minmax(190px, 0.55fr) minmax(0, 1.45fr);
+  gap: clamp(32px, 7vw, 96px);
+  align-items: center;
+}
+
+.portal-start h2,
+.portal-section__header h2,
+.faq__header h2 {
+  margin: 10px 0 0;
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.94;
+}
+
+.portal-start__link {
+  display: flex;
+  min-width: 0;
+  min-height: 112px;
+  padding: 24px 26px;
+  border: 1px solid var(--color-border-strong);
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--color-text);
+  color: var(--color-background);
+  text-decoration: none;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.portal-start__link:hover {
+  box-shadow: 7px 7px 0 var(--color-accent);
+  transform: translate(-4px, -4px);
+}
+
+.portal-start__link > span:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.portal-start__link small,
+.portal-card time {
+  color: var(--color-surface);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.portal-start__link strong {
+  overflow-wrap: anywhere;
+  font-family: var(--display);
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.portal-start__link > span:last-child {
+  flex: none;
+  color: var(--color-accent);
+  font-size: 2rem;
+}
+
+.portal-section {
+  padding-block: clamp(68px, 9vw, 120px);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.portal-section__header {
+  display: grid;
+  margin-bottom: clamp(34px, 5vw, 62px);
+  grid-template-columns: minmax(170px, 0.45fr) minmax(0, 1.55fr);
+  gap: clamp(28px, 6vw, 80px);
+  align-items: end;
+}
+
+.portal-section__header h2 {
+  max-width: 780px;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 18px;
+}
+
+.portal-card {
+  display: flex;
+  min-width: 0;
+  min-height: 270px;
+  padding: 26px;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--color-border-strong);
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-background) 84%, transparent);
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.portal-card:hover {
+  border-color: var(--page-accent, var(--color-accent));
+  box-shadow: 7px 7px 0 color-mix(in srgb, var(--color-text) 10%, transparent);
+  transform: translate(-3px, -3px);
+}
+
+.portal-card__index {
+  color: var(--color-accent-strong);
+  font-family: var(--display);
+  font-size: 2rem;
+  font-style: italic;
+}
+
+.portal-card time {
+  color: var(--color-text-muted);
+}
+
+.portal-card h3 {
+  margin: 30px 0 14px;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 2.5vw, 2.15rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.portal-card time + h3 {
+  margin-top: 18px;
+}
+
+.portal-card p {
+  margin: 0 0 28px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.portal-card__action {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.home-media__content {
+  display: grid;
+  gap: clamp(30px, 6vw, 70px);
+}
+
+.faq {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1.45fr);
+  gap: clamp(36px, 7vw, 96px);
+}
+
+.faq__list {
+  border-top: 1px solid var(--color-border-strong);
+}
+
+.faq__list details {
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.faq__list summary {
+  display: flex;
+  min-height: 48px;
+  padding: 22px 4px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  list-style: none;
+}
+
+.faq__list summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq__list summary::after {
+  flex: none;
+  color: var(--color-accent-strong);
+  content: "+";
+  font-family: var(--mono);
+}
+
+.faq__list details[open] summary::after {
+  content: "−";
+}
+
+.faq__list p {
+  max-width: 720px;
+  margin: 0;
+  padding: 0 42px 24px 4px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
 .hero {
   display: grid;
   min-height: 680px;
@@ -2214,6 +2478,17 @@ select:focus-visible {
     display: block;
   }
 
+  .game-hero {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .portal-start,
+  .portal-section__header,
+  .faq {
+    grid-template-columns: 1fr;
+  }
+
   .hero {
     min-height: 0;
     grid-template-columns: 1fr;
@@ -2331,6 +2606,33 @@ select:focus-visible {
 
   .brand__copy small {
     display: none;
+  }
+
+  .game-hero {
+    padding-block: 58px 64px;
+    gap: 40px;
+  }
+
+  .game-hero__copy h1 {
+    font-size: clamp(3.25rem, 16vw, 4.8rem);
+  }
+
+  .portal-start {
+    gap: 24px;
+  }
+
+  .portal-start__link {
+    min-height: 96px;
+    padding: 20px;
+  }
+
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-card {
+    min-height: 230px;
+    padding: 22px;
   }
 
   .hero {

@@ -14,6 +14,7 @@ import type { ImageAsset, VideoAsset } from "../../data/schemas/media";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GameMedia from "../media/GameMedia.astro";
 import ScreenshotGallery from "../media/ScreenshotGallery.astro";
+import FAQ from "./FAQ.astro";
 import QuickFacts from "./QuickFacts.astro";
 import RelatedPages from "./RelatedPages.astro";
 import Sources from "./Sources.astro";
@@ -27,12 +28,14 @@ interface Props {
   heroMedia?: ImageAsset;
   galleryMedia?: ImageAsset[];
   trailerMedia?: VideoAsset;
+  faq?: Array<{ question: string; answer: string }>;
 }
 
 const {
   page,
   headings = [],
   quickFacts = [],
+  faq = [],
   sectionLabel = "Player guide",
 } = Astro.props;
 const mappedMedia = mediaCatalog.getPageMedia(page.pageId);
@@ -129,6 +132,7 @@ const structuredData = [
           <GameMedia asset={trailerMedia} />
         </div>
       )}
+      <FAQ items={faq} />
       <RelatedPages pages={relatedPages} />
       <Sources sources={page.sources} />
     </article>

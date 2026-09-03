@@ -10,18 +10,18 @@ const footerPages = enabledPageCatalog.filter((page) =>
 <footer class="site-footer">
   <div class="shell site-footer__grid">
     <div>
-      <span class="eyebrow">End of transmission</span>
+      <span class="eyebrow">Player index</span>
       <p class="site-footer__statement">
-        Built for evidence-led game publishing, not content churn.
+        Guides, answers, and game reference for the next session.
       </p>
     </div>
     <div class="site-footer__meta">
       <p>{siteConfig.brand.name} / {year}</p>
-      <p>English-first · Static by default</p>
+      <p>{siteConfig.brand.tagline}</p>
       <nav class="site-footer__links" aria-label="Company and legal">
         {footerPages.map((page) => <a href={page.route}>{page.pageId}</a>)}
       </nav>
-      <a href="/#top">Return to coordinates 00.00 ↑</a>
+      <a href="/#top">Back to top ↑</a>
     </div>
   </div>
 </footer>
