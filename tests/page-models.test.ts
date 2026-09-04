@@ -11,7 +11,6 @@ import {
   selectToolPages,
 } from "../src/core/page-models";
 import {
-  enabledPageCatalog,
   pageInventory,
   siteConfig,
 } from "../src/core/site-data";
@@ -119,6 +118,23 @@ const optionalCatalog = buildEnabledPageCatalog(
   allOptionalConfig,
   optionalInventory,
 );
+const noOptionalCatalog = buildEnabledPageCatalog(
+  defineGameConfig({
+    ...siteConfig,
+    features: {
+      ...siteConfig.features,
+      heroes: false,
+      weapons: false,
+      items: false,
+      maps: false,
+      tierLists: false,
+      news: false,
+      calculator: false,
+      planner: false,
+    },
+  }),
+  pageInventory,
+);
 
 describe("page model selectors", () => {
   it("selects each optional model only from matching inventory entries", () => {
@@ -147,12 +163,12 @@ describe("page model selectors", () => {
   });
 
   it("selects no optional production pages under default flags", () => {
-    expect(selectHubPages(enabledPageCatalog, "heroes")).toEqual([]);
-    expect(selectEntityPages(enabledPageCatalog, "hero")).toEqual([]);
-    expect(selectDatabasePages(enabledPageCatalog, "heroes")).toEqual([]);
-    expect(selectEditorialPages(enabledPageCatalog, "meta")).toEqual([]);
-    expect(selectEditorialPages(enabledPageCatalog, "patch")).toEqual([]);
-    expect(selectToolPages(enabledPageCatalog)).toEqual([]);
+    expect(selectHubPages(noOptionalCatalog, "heroes")).toEqual([]);
+    expect(selectEntityPages(noOptionalCatalog, "hero")).toEqual([]);
+    expect(selectDatabasePages(noOptionalCatalog, "heroes")).toEqual([]);
+    expect(selectEditorialPages(noOptionalCatalog, "meta")).toEqual([]);
+    expect(selectEditorialPages(noOptionalCatalog, "patch")).toEqual([]);
+    expect(selectToolPages(noOptionalCatalog)).toEqual([]);
   });
 
   it("builds stable tool slugs and rejects routes outside the tool family", () => {
@@ -167,7 +183,7 @@ describe("page model selectors", () => {
         { ...toolPages[0], route: "/calculators/damage/" },
       ]),
     ).toThrow(/tools/i);
-    expect(buildToolRouteRecords(selectToolPages(enabledPageCatalog))).toEqual(
+    expect(buildToolRouteRecords(selectToolPages(noOptionalCatalog))).toEqual(
       [],
     );
   });

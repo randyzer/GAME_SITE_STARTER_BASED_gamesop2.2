@@ -49,14 +49,13 @@ const breadcrumbTrail = buildBreadcrumbTrail(siteConfig, page, enabledPageCatalo
       <dl>
         <div><dt>Patch</dt><dd>{definition.patch}</dd></div>
         <div><dt>Updated</dt><dd>{definition.updatedAt}</dd></div>
-        <div><dt>Confidence</dt><dd>{definition.confidence}</dd></div>
       </dl>
     </header>
 
     <section class="tool-workspace" aria-label={`${kindLabel} workspace`}>
       <aside>
-        <span class="eyebrow">Version guard</span>
-        <p>Inputs and formulas must be bound to the same reviewed fact set before this route is published.</p>
+        <span class="eyebrow">Calculation context</span>
+        <p>Results use the reviewed formula set for patch {definition.patch}. Recheck after game updates.</p>
       </aside>
       <div class="tool-workspace__surface">
         {definition.kind === "calculator" ? (
@@ -69,8 +68,8 @@ const breadcrumbTrail = buildBreadcrumbTrail(siteConfig, page, enabledPageCatalo
 
     <section class="entity-sources section-rule" aria-labelledby="tool-sources-title">
       <div>
-        <p class="eyebrow">Formula ledger</p>
-        <h2 id="tool-sources-title">Evidence attached</h2>
+        <p class="eyebrow">Sources &amp; verification</p>
+        <h2 id="tool-sources-title">How this calculation was checked</h2>
       </div>
       <ol>
         {definition.sources.map((source, index) => (
@@ -79,7 +78,7 @@ const breadcrumbTrail = buildBreadcrumbTrail(siteConfig, page, enabledPageCatalo
             <div>
               <strong>{source.sourceType.replaceAll("-", " ")}</strong>
               <p>{source.evidenceNote}</p>
-              <a href={source.sourceUrl} rel="noreferrer">Inspect source ↗</a>
+              <a href={source.sourceUrl} rel="noreferrer">View source ↗</a>
             </div>
             <time datetime={source.accessedAt}>Accessed {source.accessedAt}</time>
           </li>

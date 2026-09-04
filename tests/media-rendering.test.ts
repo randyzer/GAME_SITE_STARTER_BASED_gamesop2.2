@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import WikiArticle from "../src/components/wiki/WikiArticle.astro";
 import EntityDetail from "../src/components/EntityDetail.astro";
-import { getPageByRoute } from "../src/core/site-data";
+import { pageInventory } from "../src/core/site-data";
 import { collectMediaHtmlErrors } from "../scripts/media-validation";
 
 type AstroComponent = Parameters<AstroContainer["renderToString"]>[0];
@@ -25,7 +25,9 @@ const video = {
   caption: "Public test video used only to inspect the embed layout.",
   sourceUrl: "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
 };
-const page = getPageByRoute("/guides/getting-started/");
+const page = pageInventory.find(
+  (entry) => entry.pageId === "guide.getting-started",
+)!;
 
 async function renderMedia(name: string, props: Record<string, unknown>) {
   const load = components[`../src/components/media/${name}.astro`];

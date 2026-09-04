@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { defineGameConfig } from "../src/config/schema";
+import { entityModuleDefinitions } from "../src/data/entity-modules";
+import { pageTypeSchema } from "../src/data/schemas/page-inventory";
+import { loadFactModule } from "../src/core/fact-loader";
 import {
   pageInventory,
   siteConfig,
@@ -31,7 +34,11 @@ describe("collectSiteValidationErrors", () => {
   it("aggregates independent route, content, implementation, and fact errors", () => {
     const configWithHeroes = defineGameConfig({
       ...siteConfig,
-      features: { ...siteConfig.features, heroes: true },
+      features: {
+        ...siteConfig.features,
+        guides: true,
+        heroes: true,
+      },
     });
     const inventoryWithoutHome = pageInventory.filter(
       (page) => page.pageId !== "home",
@@ -64,22 +71,31 @@ describe("collectSiteValidationErrors", () => {
   });
 
   it("accepts the starter's enabled pages and content", () => {
+    const contentEntries = pageInventory.flatMap((page) =>
+      page.contentRef
+        ? [
+            {
+              collection: page.contentRef.collection,
+              id: page.contentRef.slug,
+              data: { pageId: page.pageId },
+            },
+          ]
+        : [],
+    );
     const errors = collectSiteValidationErrors({
       config: siteConfig,
       inventory: pageInventory,
-      contentEntries: [guideContent],
-      factModules: {},
+      contentEntries,
+      factModules: Object.fromEntries(
+        entityModuleDefinitions
+          .filter((definition) => siteConfig.features[definition.module])
+          .map((definition) => [
+            definition.module,
+            loadFactModule(definition.module, siteConfig),
+          ]),
+      ),
       fixedRoutes: ["/"],
-      implementedPageTypes: [
-        "home",
-        "guide",
-        "hub",
-        "search",
-        "about",
-        "privacy",
-        "terms",
-        "not-found",
-      ],
+      implementedPageTypes: [...pageTypeSchema.options],
     });
 
     expect(errors).toEqual([]);
@@ -88,6 +104,7 @@ describe("collectSiteValidationErrors", () => {
   it("reports broken configured, related, and indexability references together", () => {
     const brokenConfig = defineGameConfig({
       ...siteConfig,
+      features: { ...siteConfig.features, heroes: false },
       navigation: {
         groups: [
           { pageId: "home" },
@@ -173,6 +190,7 @@ describe("collectSiteValidationErrors", () => {
   it("rejects a feature-disabled page referenced by navigation", () => {
     const config = defineGameConfig({
       ...siteConfig,
+      features: { ...siteConfig.features, heroes: false },
       navigation: { groups: [{ pageId: "hero.demo-sentinel" }] },
     });
 

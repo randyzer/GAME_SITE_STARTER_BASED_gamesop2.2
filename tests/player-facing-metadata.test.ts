@@ -19,6 +19,10 @@ const componentUrls = {
     "../src/pages/guides/[...slug].astro",
     import.meta.url,
   ),
+  toolShell: new URL(
+    "../src/components/ToolShell.astro",
+    import.meta.url,
+  ),
 };
 
 function source(url: URL) {
@@ -32,7 +36,7 @@ function template(url: URL) {
 describe("player-facing metadata", () => {
   it("keeps internal research labels out of public article and entity markup", () => {
     const forbiddenLabels =
-      /Priority|Confidence|Search Signal|>Signal<|Internal tags|Filed under|Editorial brief|Evidence ledger|Provenance ledger|Current fact set/i;
+      /Priority|Confidence|Search Signal|>Signal<|Internal tags|Filed under|Editorial brief|Evidence ledger|Provenance ledger|Current fact set|Formula ledger|before this route is published/i;
 
     for (const url of Object.values(componentUrls)) {
       expect(template(url)).not.toMatch(forbiddenLabels);

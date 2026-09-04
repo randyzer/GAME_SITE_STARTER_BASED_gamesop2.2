@@ -177,7 +177,12 @@ describe("buildEnabledPageCatalog", () => {
       }),
     ]);
 
-    expect(buildEnabledPageCatalog(gameConfig, inventory)).toEqual([basePage]);
+    const config = {
+      ...gameConfig,
+      features: { ...gameConfig.features, heroes: false },
+    };
+
+    expect(buildEnabledPageCatalog(config, inventory)).toEqual([basePage]);
   });
 
   it("excludes an unpublished page", () => {
@@ -210,7 +215,7 @@ describe("buildEnabledPageCatalog", () => {
     );
   });
 
-  it("parses the starter inventory and omits its disabled hero route", () => {
+  it("parses the project inventory and applies its current publication and feature gates", () => {
     const inventoryUrl = new URL(
       "../src/data/page-inventory.json",
       import.meta.url,
@@ -222,16 +227,13 @@ describe("buildEnabledPageCatalog", () => {
       (entry) => entry.route,
     );
 
-    expect(routes).toEqual([
-      "/",
-      "/guides/",
-      "/guides/getting-started/",
-      "/search/",
-      "/about/",
-      "/privacy/",
-      "/terms/",
-      "/404.html",
-    ]);
-    expect(routes).not.toContain("/heroes/demo-sentinel/");
+    for (const entry of inventory) {
+      const shouldBeEnabled =
+        entry.visibility === "public" &&
+        entry.publicationStatus === "published" &&
+        (!entry.feature || gameConfig.features[entry.feature]);
+
+      expect(routes.includes(entry.route), entry.pageId).toBe(shouldBeEnabled);
+    }
   });
 });

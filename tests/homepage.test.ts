@@ -7,6 +7,8 @@ import { defineGameConfig } from "../src/config/schema";
 import { buildEnabledPageCatalog } from "../src/core/catalog";
 import {
   pageInventory,
+  featuredHomepagePages,
+  enabledPageCatalog,
   siteConfig,
 } from "../src/core/site-data";
 import type { PageInventoryEntry } from "../src/data/schemas/page-inventory";
@@ -192,7 +194,11 @@ describe("homepage model", () => {
     });
     const config = defineGameConfig({
       ...siteConfig,
-      features: { ...siteConfig.features, news: false },
+      features: {
+        ...siteConfig.features,
+        guides: true,
+        news: false,
+      },
     });
     const enabledPages = buildEnabledPageCatalog(config, [
       publicGuide,
@@ -399,6 +405,13 @@ describe("homepage presentation", () => {
     expect(index).not.toMatch(/Popular Systems/i);
   });
 
+  it("labels Start Here from the resolved featured page instead of a fixed guide name", () => {
+    const index = source(indexUrl);
+
+    expect(index).toContain("{homepage.startHere[0].title}");
+    expect(index).not.toContain("Open the getting-started guide");
+  });
+
   it("removes Starter/demo dashboard language from the homepage main content", async () => {
     const container = await AstroContainer.create();
     const html = await container.renderToString(HomePage);
@@ -413,8 +426,14 @@ describe("homepage presentation", () => {
     expect(html).not.toMatch(
       /Built for evidence-led game publishing|Static by default|End of transmission|Return to coordinates/i,
     );
-    expect(main).toContain("Start here");
-    expect(main).toContain("Browse by category");
+    const model = buildHomepageModel({
+      enabledPages: enabledPageCatalog,
+      featuredPages: featuredHomepagePages,
+    });
+    expect(main.includes("Start here")).toBe(model.startHere.length > 0);
+    expect(main.includes("Browse by category")).toBe(
+      model.categories.length > 0,
+    );
   });
 
   it("uses only the existing Phase B media placements and hides an empty home mapping", async () => {

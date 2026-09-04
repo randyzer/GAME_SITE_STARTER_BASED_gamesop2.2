@@ -4,13 +4,56 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { enabledPageCatalog, resolvedNavigationGroups } from "../src/core/site-data";
+import { defineGameConfig } from "../src/config/schema";
+import { buildEnabledPageCatalog } from "../src/core/catalog";
+import {
+  pageInventory,
+  resolveNavigationGroups,
+  siteConfig,
+} from "../src/core/site-data";
 import { collectOutputReconciliationErrors, routeToOutputFile } from "../src/core/output-reconciliation";
+import { getSitemapRoutes } from "../src/core/seo";
 import mediaFixture from "./fixtures/media/media-rich.json";
 
 let fixtureRoot: string;
 let buildLog = "";
 const projectRoot = process.cwd();
+const mediaBuildConfig = defineGameConfig({
+  ...siteConfig,
+  navigation: {
+    groups: [
+      { label: "Home", pageId: "home" },
+      {
+        label: "Guides",
+        pageId: "hub.guides",
+        children: ["guide.getting-started"],
+      },
+      { label: "Search", pageId: "search" },
+    ],
+  },
+  homepage: { featuredPageIds: ["guide.getting-started"] },
+  features: {
+    ...siteConfig.features,
+    guides: true,
+    heroes: false,
+    weapons: false,
+    items: false,
+    maps: false,
+    tierLists: false,
+    news: false,
+    search: true,
+    calculator: false,
+    planner: false,
+  },
+});
+const mediaBuildCatalog = buildEnabledPageCatalog(
+  mediaBuildConfig,
+  pageInventory,
+);
+const mediaBuildNavigation = resolveNavigationGroups(
+  mediaBuildConfig.navigation.groups,
+  mediaBuildCatalog,
+);
 
 beforeAll(() => {
   fixtureRoot = mkdtempSync(join(tmpdir(), "starter-media-build-"));
@@ -18,6 +61,18 @@ beforeAll(() => {
     cpSync(resolve(projectRoot, file), join(fixtureRoot, file), { recursive: true });
   }
   symlinkSync(resolve(projectRoot, "node_modules"), join(fixtureRoot, "node_modules"), "dir");
+  const astroConfigPath = join(fixtureRoot, "astro.config.ts");
+  writeFileSync(
+    astroConfigPath,
+    readFileSync(astroConfigPath, "utf8").replace(
+      'output: "static",',
+      'cacheDir: "./.astro-cache",\n  output: "static",',
+    ),
+  );
+  writeFileSync(
+    join(fixtureRoot, "game.config.ts"),
+    `import { defineGameConfig } from "./src/config/schema";\n\nexport default defineGameConfig(${JSON.stringify(mediaBuildConfig, null, 2)});\n`,
+  );
   writeFileSync(join(fixtureRoot, "src/data/media/media.json"), JSON.stringify(mediaFixture));
   for (const file of ["qa-overview.svg", "qa-detail.svg"]) {
     cpSync(resolve(projectRoot, "tests/fixtures/media", file), join(fixtureRoot, "public/media", file));
@@ -42,10 +97,13 @@ afterAll(() => {
 
 describe("media-rich static build", () => {
   it("preserves exact inventory routes and Pagefind inclusion", () => {
-    expect(collectOutputReconciliationErrors(enabledPageCatalog, join(fixtureRoot, "dist"))).toEqual([]);
-    expect(buildLog).toContain("Static output reconciliation passed: 8 inventory routes matched.");
-    expect(buildLog).toMatch(/Indexed 4 pages/);
-    expect(buildLog).toContain("Generated build audit passed for 8 pages.");
+    const routeCount = mediaBuildCatalog.length;
+    const indexableCount = getSitemapRoutes(mediaBuildCatalog).length;
+
+    expect(collectOutputReconciliationErrors(mediaBuildCatalog, join(fixtureRoot, "dist"))).toEqual([]);
+    expect(buildLog).toContain(`Static output reconciliation passed: ${routeCount} inventory routes matched.`);
+    expect(buildLog).toMatch(new RegExp(`Indexed ${indexableCount} pages?`));
+    expect(buildLog).toContain(`Generated build audit passed for ${routeCount} pages.`);
     expect(existsSync(join(fixtureRoot, "dist/heroes/demo-sentinel/index.html"))).toBe(false);
   });
 
@@ -61,8 +119,8 @@ describe("media-rich static build", () => {
   });
 
   it("preserves every resolved desktop/mobile navigation link", () => {
-    const expected = resolvedNavigationGroups.flatMap((group) => [group.page, ...group.children]);
-    for (const page of enabledPageCatalog) {
+    const expected = mediaBuildNavigation.flatMap((group) => [group.page, ...group.children]);
+    for (const page of mediaBuildCatalog) {
       const html = readFileSync(join(fixtureRoot, "dist", routeToOutputFile(page.route)), "utf8");
       for (const className of ["desktop-nav", "mobile-nav__panel"]) {
         const nav = html.match(new RegExp(`<nav class="${className}"[^>]*>([\\s\\S]*?)</nav>`))?.[1] ?? "";

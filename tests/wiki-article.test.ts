@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import WikiArticle from "../src/components/wiki/WikiArticle.astro";
 import { selectWikiArticleHeadings } from "../src/components/wiki/wiki-article";
-import { getPageByRoute } from "../src/core/site-data";
+import { pageInventory } from "../src/core/site-data";
 
 const wikiArticleUrl = new URL(
   "../src/components/wiki/WikiArticle.astro",
@@ -100,7 +100,9 @@ describe("WikiArticle", () => {
   });
 
   it("renders FAQ after body content without adding its heading to the body TOC", async () => {
-    const page = getPageByRoute("/guides/getting-started/");
+    const page = pageInventory.find(
+      (entry) => entry.pageId === "guide.getting-started",
+    )!;
     const container = await AstroContainer.create();
     const html = await container.renderToString(WikiArticle, {
       props: {

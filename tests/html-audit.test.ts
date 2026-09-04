@@ -93,24 +93,24 @@ describe("generated HTML audit", () => {
 
   it("reports duplicate metadata and orphaned indexable pages", () => {
     const home = getPageByRoute("/");
-    const guide = getPageByRoute("/guides/");
-    const duplicateGuide = {
-      ...guide,
+    const about = getPageByRoute("/about/");
+    const duplicateAbout = {
+      ...about,
       title: home.title,
       description: home.description,
     };
     const errors = collectBuildHtmlAuditErrors({
       config: siteConfig,
-      pages: [home, duplicateGuide],
+      pages: [home, duplicateAbout],
       htmlByRoute: new Map([
         [home.route, validHtml(home, ["/"])],
-        [duplicateGuide.route, validHtml(duplicateGuide, ["/"])],
+        [duplicateAbout.route, validHtml(duplicateAbout, ["/"])],
       ]),
     }).join("\n");
 
     expect(errors).toMatch(/duplicate title/i);
     expect(errors).toMatch(/duplicate description/i);
-    expect(errors).toMatch(/orphaned.*guides/i);
+    expect(errors).toMatch(/orphaned.*about/i);
   });
 
   it("collects only local build assets referenced by HTML", () => {

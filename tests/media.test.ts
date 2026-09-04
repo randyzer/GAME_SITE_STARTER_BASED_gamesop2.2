@@ -4,6 +4,7 @@ import {
   createMediaCatalog,
   mediaCatalog,
 } from "../src/data/media/catalog";
+import mediaManifest from "../src/data/media/media.json";
 import pageInventory from "../src/data/page-inventory.json";
 import {
   imageAssetSchema,
@@ -248,9 +249,8 @@ describe("media schemas", () => {
 });
 
 describe("media catalog", () => {
-  it("keeps the default manifest empty", () => {
-    expect(mediaCatalog.assets).toEqual([]);
-    expect(mediaCatalog.getPageMedia("home")).toEqual({ galleryMedia: [] });
+  it("loads the current project manifest without discarding valid assets", () => {
+    expect(mediaCatalog.assets).toEqual(mediaManifest.assets);
   });
 
   it("returns no slots for an unmapped page", () => {

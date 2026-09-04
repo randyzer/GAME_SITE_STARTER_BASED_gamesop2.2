@@ -1,105 +1,183 @@
-# Game Atlas Starter
+# Game Wiki Starter 2.0
 
-An English-first, static game SEO starter built around two separate sources of
-truth:
+Starter 2.0 is a static-first Astro foundation for media-rich game wikis. It
+keeps the proven publication, fact, SEO, route, search, and reconciliation core
+while providing a player-facing Wiki portal, grouped navigation, Wiki articles,
+local media, optional FAQ content, and restrained page-family accents.
 
-- `src/data/page-inventory.json` decides which URLs may ship, index, link, and
-  appear in search.
-- `src/data/facts/*.json` and `src/data/tools/*.json` hold patch-sensitive game
-  values and evidence once.
+The default repository is a small generic adoption example. It deliberately
+does not ship fictional game facts, screenshots, news, or entity databases.
 
-The default build contains a small generic starter site, not fictional game
-facts or articles. Optional route families are absent until their feature flag,
-Inventory rows, implementation, and validated data all agree.
+## Version provenance
 
-## Requirements
+These three artifacts have different responsibilities:
 
-- Node.js 22.22.0 (`.nvmrc`)
+- `GAME_SOP_2.2` is the production methodology. It decides what a competitive
+  game wiki should cover and which human research/release gates apply.
+- `GAME_SITE_STARTER 2.0` is the reusable technical implementation that makes
+  approved coverage easy to publish consistently.
+- `CodexMasterPrompt_v2.3Final.md` is the current execution entry. Its text still
+  references `GAME_SOP_2.1` and the prior Starter path. Do not treat those stale
+  references as the Starter 2.0 architecture authority; synchronization belongs
+  to the later `v2.4Final` Master Prompt task.
+
+Starter 2.0 follows `GAME_SOP_2.2`. The authoritative technical design is
+[`docs/STARTER_2.0_ARCHITECTURE_PROPOSAL.md`](docs/STARTER_2.0_ARCHITECTURE_PROPOSAL.md).
+
+## Requirements and first build
+
+- Node.js `22.22.0` from `.nvmrc`
 - npm with lockfile support
 
 ```bash
 nvm use
 npm ci
+npm run validate
 npm run check
 npm run build
 npm run preview
 ```
 
-The production output is `dist/`. `npm run build` validates configuration and
-data, builds Astro pages, reconciles every HTML route with Page Inventory,
-creates the Pagefind index, and audits generated SEO/accessibility/link/budget
-contracts.
+The production output is `dist/`. `npm run build` validates configuration,
+content, facts, and media; generates static Astro pages; reconciles every HTML
+route exactly with Runtime Page Inventory; creates the Pagefind index; and audits
+generated HTML, links, SEO, sitemap, robots, media markup, and size budgets.
 
-## Architecture
+## Practical architecture
 
-- Astro static output; ordinary pages ship no client JavaScript.
-- Strict TypeScript and Zod at configuration/data boundaries.
-- MDX Content Collections for guides, meta reports, and patch news.
-- Explicit route families for heroes, weapons, items, maps, editorial pages,
-  calculators, and planners.
-- React islands only for Pagefind search, entity filtering, calculators, and
-  planners.
-- Page Inventory-derived navigation, homepage directory, related links,
-  canonical URLs, sitemap, indexability, and build reconciliation.
-- Source/date/confidence provenance attached to facts, articles, and tools.
+| Authority | Owns | Does not own |
+| --- | --- | --- |
+| `src/data/page-inventory.json` | Page existence, route, publication state, visibility, indexability, titles, relationships, source basis | Article body, media placement, FAQ, layout |
+| `game.config.ts` | Brand/site values, feature flags, navigation groups/order, featured page IDs | Duplicate routes or publication state |
+| `src/content/**` | Narrative guide/meta/news content and optional authored FAQ | Page identity or publishing decisions |
+| `src/data/facts/**` | Validated patch-sensitive structured facts and provenance | Routes or presentation labels |
+| `src/data/media/media.json` | Local image/YouTube assets and `hero`/`gallery`/`trailer` page mappings | Page publication or arbitrary layout slots |
+| `src/styles/theme.css` | Game-wide palette and page-family role tokens | Arbitrary per-component family keys |
+| Components | Presentation of already resolved data | A second publication or content database |
 
-See [architecture](docs/ARCHITECTURE_PROPOSAL.md), [content and data](docs/CONTENT_AND_DATA_GUIDE.md), [patch workflow](docs/PATCH_WORKFLOW.md), [deployment](docs/DEPLOYMENT.md), [release QA](docs/QA_CHECKLIST.md), and the latest [release audit](docs/RELEASE_AUDIT.md).
+The implementation uses:
 
-## Start a New Game Site
+- Astro 7 static output, strict TypeScript, Zod, and Tailwind CSS 4;
+- MDX Content Collections for guides, meta pages, and patch/news articles;
+- React Islands only for Pagefind search, entity filtering, calculators, and
+  planners;
+- Pagefind for local static search, with no external search service;
+- deterministic feature filtering and exact output reconciliation.
 
-1. Follow the authoritative
-   [`GAME_SOP_2.1`](https://github.com/randyzer/GAME_SOP_2.1) before adapting
-   the Starter.
-2. Complete `PROJECT_BRIEF.md`, `RESEARCH_SOURCES.md`,
-   `KEYWORD_RESEARCH.md`, `COMPETITOR_ANALYSIS.md`, `SITE_STRUCTURE.md`, and
-   `CURRENT_STATUS.md` for the new project.
-3. Complete Discovery Research before locking the page plan.
-4. Finalize the structured runtime Page Inventory SSOT; this Starter uses
-   `src/data/page-inventory.json` as that authority.
-5. Stop for human review if Discovery materially adds, removes, or merges page
-   scope.
-6. Enter implementation only after the artifacts, Inventory, and any material
-   scope change are approved.
+## Adopt for a real game
 
-During implementation, configure `game.config.ts`, add cited content and data
-through the existing schemas, enable only reviewed modules, and finish the
-complete check/build/preview workflow in `docs/QA_CHECKLIST.md`.
+1. Record the source Starter commit, `GAME_SOP_2.2` commit, and current Master
+   Prompt version in the new project's brief.
+2. Complete the SOP research and human planning gates before changing page
+   scope. The Starter does not decide whether a game needs heroes, tier lists,
+   maps, tools, or any other content family.
+3. Replace the example brand, canonical HTTPS URL, SEO defaults, social handle,
+   feature flags, grouped navigation, and featured IDs in `game.config.ts`.
+4. Review `src/data/page-inventory.json`. Add each approved route there before
+   writing its content or data.
+5. Add narrative content under `src/content/`, facts under `src/data/facts/`,
+   tools under `src/data/tools/`, and reviewed local media under `public/media/`.
+6. Replace the fallback palette in `src/styles/theme.css` after game visual
+   identity research.
+7. Run the complete workflow in
+   [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) before any deployment.
 
-## Customize Game Visual Identity
+Projects upgrading from Starter 1.0 or a 2.1-based copy should follow
+[`docs/STARTER_2.0_MIGRATION.md`](docs/STARTER_2.0_MIGRATION.md).
 
-1. Follow `GAME_SOP_2.1` to complete Game Visual Identity Research.
-2. Open `src/styles/theme.css`.
-3. Replace the Starter fallback theme with the researched palette.
-4. Keep game-specific colors out of components; consume the shared Theme
-   Tokens instead.
-5. Run the complete QA workflow after changing the palette.
+## Presentation contracts
 
-Theme mechanism = Stable Core. Game-specific palette = Flexible Edge.
+### Grouped navigation
+
+`navigation.groups` stores grouping and order using Page IDs. Runtime Page
+Inventory remains the source of routes, titles, and enabled state.
+`src/core/site-data.ts` is the sole Page ID → enabled page resolver and exports
+`resolvedNavigationGroups`; desktop/mobile components only render that result.
+
+The legacy `navigation.primaryPageIds` input is accepted as a migration adapter
+and normalized to childless groups. New projects should author only
+`navigation.groups`.
+
+### WikiArticle and EditorialArticle
+
+Guide articles use `WikiArticle`: player-facing dates, optional media and Quick
+Facts, body-renderer H2/H3 TOC, optional FAQ, Related Pages, and Sources &
+Verification. Internal Priority, Confidence, Search Signal, tags, and editorial
+briefs are not rendered.
+
+`EditorialArticle` remains the deliberate layout for meta/tier and patch/news
+content. It keeps player-friendly publication/verification information without
+reintroducing research-report metadata.
+
+### Media V1
+
+Media V1 supports only:
+
+- local image files under `public/media/`, referenced as `/media/...`;
+- validated 11-character YouTube IDs rendered through
+  `youtube-nocookie.com`.
+
+The manifest provides only `hero`, `gallery`, and `trailer` placements. Remote
+images, arbitrary iframes, uploads, dimensions/crops, a placement DSL, DAM, CDN
+abstraction, and image processing are not supported. Every asset requires an
+HTTPS `sourceUrl` for provenance; that URL does not prove legal reuse rights.
+
+See [`public/media/README.md`](public/media/README.md) for the exact contract.
+
+### Page-family accents
+
+The family key is the controlled Runtime Page Inventory `module`. BaseLayout
+exposes that value and `src/styles/page-families.css` maps it to
+`--page-accent`. Game-specific color values belong only in `theme.css`; an
+unconfigured family falls back to `--color-accent`.
+
+Components must not invent keys such as `beginner-guides`, `early-game`, or
+`hero-detail`.
+
+### Wiki Portal homepage and FAQ
+
+The homepage has a fixed portal composition. It derives featured/start pages,
+categories, systems, updates, Browse All, and optional media from existing
+authorities; empty sections render nothing. It is not a Homepage CMS or block
+builder.
+
+FAQ items are optional authored Content fields. They are visible when supplied,
+render nothing when empty, do not enter Page Inventory, and currently emit no
+FAQ JSON-LD. QuickFacts is a presentation primitive: projects map validated
+Fact values to `{ label, value }` without adding display labels to Fact schemas.
 
 ## Feature flags
 
-Flags live in `game.config.ts`. Disabling a module removes its routes from the
-enabled catalog, which also removes it from navigation, homepage discovery,
-related links, sitemap, Pagefind, and generated HTML. Enabling an entity or tool
-without its required validated data stops the build with a precise file error.
+All flags are explicit in `game.config.ts`: `guides`, `heroes`, `weapons`,
+`items`, `maps`, `tierLists`, `news`, `search`, `calculator`, and `planner`.
 
-The supported flags are `guides`, `heroes`, `weapons`, `items`, `maps`,
-`tierLists`, `news`, `search`, `calculator`, and `planner`. There are no public
-reserved flags for unimplemented route families. Tools are fully disabled when
-both `calculator` and `planner` are false.
+A disabled feature removes its owned pages from the enabled catalog and every
+derived surface: routes, grouped navigation, homepage collections, related
+links, sitemap, Pagefind, and generated HTML. Enabling an entity or tool without
+its required validated data fails validation rather than publishing a partial
+module.
 
-Entity-family registration lives in `src/data/entity-modules.ts`. Adding a new
-family extends that one explicit definition plus its concrete fact schema,
-Inventory data, route presenter, and tests; generic Core algorithms do not keep
-a second entity-family list.
+Entity-family definitions live in `src/data/entity-modules.ts`. Extending the
+supported families requires an explicit reviewed implementation and tests; this
+is not a plugin system.
+
+## Documentation
+
+- [Starter 2.0 architecture authority](docs/STARTER_2.0_ARCHITECTURE_PROPOSAL.md)
+- [Content and data boundaries](docs/CONTENT_AND_DATA_GUIDE.md)
+- [Starter 1.0 → 2.0 migration](docs/STARTER_2.0_MIGRATION.md)
+- [Release QA checklist](docs/QA_CHECKLIST.md)
+- [Patch workflow](docs/PATCH_WORKFLOW.md)
+- [Deployment boundary](docs/DEPLOYMENT.md)
+- [Starter 2.0 release audit](docs/STARTER_2.0_RELEASE_AUDIT.md)
 
 ## Commercial-use boundary
 
-The starter architecture is designed for commercial websites. That does not
-grant rights to a game's name, logo, screenshots, official art, third-party
-wiki content, APIs, scraped data, or community submissions. The adopter must
-review licenses, platform terms, attribution, privacy, advertising, analytics,
-and legal copy for the actual business and jurisdiction.
+The Starter architecture is suitable for commercial projects, but it grants no
+rights to a game's name, logo, screenshots, official art, APIs, third-party wiki
+content, scraped data, or community submissions. The adopter remains responsible
+for factual review, licenses, platform terms, attribution, privacy, analytics,
+advertising, legal copy, and the final human release decision.
 
-No analytics, telemetry, accounts, database, CMS, ad scripts, or external
-search service are included by default.
+No analytics, telemetry, accounts, database, CMS, ad scripts, or automatic
+content/media selection are included by default.

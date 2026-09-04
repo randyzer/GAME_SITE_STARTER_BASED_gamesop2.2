@@ -62,4 +62,11 @@ describe("navigation presentation boundary", () => {
     expect(panelRule).toMatch(/max-height:\s*calc\(100(?:dvh|vh)\s*-\s*\d+px\)/);
     expect(panelRule).toMatch(/overflow-y:\s*auto/);
   });
+
+  it("keeps the mobile menu toggle large enough for touch input", () => {
+    const styles = source(globalStylesUrl);
+    const toggleRule = styles.match(/\.mobile-nav__toggle\s*\{([^}]*)\}/)?.[1];
+
+    expect(toggleRule).toMatch(/min-height:\s*44px/);
+  });
 });

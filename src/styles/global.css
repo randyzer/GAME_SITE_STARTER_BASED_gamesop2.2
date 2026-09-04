@@ -289,6 +289,7 @@ select:focus-visible {
 
 .mobile-nav__toggle {
   min-width: 94px;
+  min-height: 44px;
   padding: 11px 13px;
   border: 1px solid var(--color-text);
   font-size: 0.62rem;
